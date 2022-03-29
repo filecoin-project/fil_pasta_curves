@@ -57,6 +57,7 @@ pub trait CurveExt:
     /// # Example
     ///
     /// ```
+    /// # extern crate fil_pasta_curves as pasta_curves;
     /// use pasta_curves::arithmetic::CurveExt;
     /// fn pedersen_commitment<C: CurveExt>(
     ///     x: C::ScalarExt,

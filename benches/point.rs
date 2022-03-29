@@ -1,4 +1,5 @@
 //! Benchmarks for point operations.
+extern crate fil_pasta_curves as pasta_curves;
 
 use criterion::{criterion_group, criterion_main, Criterion};
 
