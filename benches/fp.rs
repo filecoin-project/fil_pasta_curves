@@ -1,4 +1,6 @@
 ///! Benchmarks for the Fp field.
+extern crate fil_pasta_curves as pasta_curves;
+
 use criterion::{criterion_group, criterion_main, Bencher, Criterion};
 
 use rand::SeedableRng;

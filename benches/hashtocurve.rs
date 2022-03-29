@@ -1,4 +1,5 @@
 //! Benchmarks for hashing to the Pasta curves.
+extern crate fil_pasta_curves as pasta_curves;
 
 use criterion::{criterion_group, criterion_main, Criterion};
 
