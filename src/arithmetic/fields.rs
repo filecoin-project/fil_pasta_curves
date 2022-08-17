@@ -96,7 +96,7 @@ pub trait SqrtRatio: ff::PrimeField {
 
 /// This trait is a common interface for dealing with elements of a finite
 /// field.
-pub trait FieldExt: SqrtRatio + From<bool> + Ord + Group<Scalar = Self> {
+pub trait FieldExt: SqrtRatio + From<bool> + Ord + Group<Scalar = Self> + ff::Field {
     /// Modulus of the field written as a string for display purposes
     const MODULUS: &'static str;
 
