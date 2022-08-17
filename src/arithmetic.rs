@@ -16,7 +16,12 @@ pub use fields::*;
 pub trait Group: Copy + Clone + Send + Sync + 'static {
     /// The group is assumed to be of prime order $p$. `Scalar` is the
     /// associated scalar field of size $p$.
+    #[cfg(not(feature = "gpu"))]
     type Scalar: FieldExt;
+    /// The group is assumed to be of prime order $p$. `Scalar` is the
+    /// associated scalar field of size $p$.
+    #[cfg(feature = "gpu")]
+    type Scalar: FieldExt + ec_gpu::GpuName;
 
     /// Returns the additive identity of the group.
     fn group_zero() -> Self;
