@@ -89,6 +89,7 @@ pub trait CurveExt:
 /// serialization, storage in memory, and inspection of $x$ and $y$ coordinates.
 ///
 /// Requires the `alloc` feature flag because of `hash_to_curve` on [`CurveExt`].
+#[cfg(not(feature = "gpu"))]
 #[cfg(feature = "alloc")]
 #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
 pub trait CurveAffine:
@@ -101,6 +102,52 @@ pub trait CurveAffine:
     + ConditionallySelectable
     + ConstantTimeEq
     + From<<Self as PrimeCurveAffine>::Curve>
+{
+    /// The scalar field of this elliptic curve.
+    type ScalarExt: FieldExt;
+    /// The base field over which this elliptic curve is constructed.
+    type Base: FieldExt;
+    /// The projective form of the curve
+    type CurveExt: CurveExt<AffineExt = Self, ScalarExt = <Self as CurveAffine>::ScalarExt>;
+
+    /// Gets the coordinates of this point.
+    ///
+    /// Returns None if this is the identity.
+    fn coordinates(&self) -> CtOption<Coordinates<Self>>;
+
+    /// Obtains a point given $(x, y)$, failing if it is not on the
+    /// curve.
+    fn from_xy(x: Self::Base, y: Self::Base) -> CtOption<Self>;
+
+    /// Returns whether or not this element is on the curve; should
+    /// always be true unless an "unchecked" API was used.
+    fn is_on_curve(&self) -> Choice;
+
+    /// Returns the curve constant $a$.
+    fn a() -> Self::Base;
+
+    /// Returns the curve constant $b$.
+    fn b() -> Self::Base;
+}
+
+/// This trait is the affine counterpart to `Curve` and is used for
+/// serialization, storage in memory, and inspection of $x$ and $y$ coordinates.
+///
+/// Requires the `alloc` feature flag because of `hash_to_curve` on [`CurveExt`].
+#[cfg(feature = "gpu")]
+#[cfg(feature = "alloc")]
+#[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
+pub trait CurveAffine:
+    PrimeCurveAffine<
+        Scalar = <Self as CurveAffine>::ScalarExt,
+        Curve = <Self as CurveAffine>::CurveExt,
+    > + Default
+    + Add<Output = <Self as PrimeCurveAffine>::Curve>
+    + Sub<Output = <Self as PrimeCurveAffine>::Curve>
+    + ConditionallySelectable
+    + ConstantTimeEq
+    + From<<Self as PrimeCurveAffine>::Curve>
+    + ec_gpu::GpuName
 {
     /// The scalar field of this elliptic curve.
     type ScalarExt: FieldExt;
