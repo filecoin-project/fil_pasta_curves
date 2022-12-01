@@ -773,7 +773,7 @@ impl FieldExt for Fp {
 #[cfg(feature = "gpu")]
 impl ec_gpu::GpuName for Fp {
     fn name() -> alloc::string::String {
-        ec_gpu::name!()
+        "pasta_curves__fields__fp__Fp".into()
     }
 }
 
