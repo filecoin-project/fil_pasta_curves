@@ -9,7 +9,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Setup mdBook
         uses: peaceiris/actions-mdbook@v1
@@ -17,10 +17,8 @@ jobs:
           mdbook-version: 'latest'
 
       - name: Install mdbook-katex
-        uses: actions-rs/cargo@v1
-        with:
-          command: install
-          args: mdbook-katex
+        run: cargo install mdbook-katex
+        shell: bash
 
       - name: Build Pasta book
         run: mdbook build book/

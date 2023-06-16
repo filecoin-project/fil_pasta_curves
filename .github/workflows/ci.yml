@@ -13,16 +13,16 @@ jobs:
         os: [ubuntu-latest]
 
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@v3
+      - id: rust
+        run: echo "toolchain=$(cat rust-toolchain)" >> $GITHUB_OUTPUT
+        shell: bash
+      - uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: 1.56.0
-          override: true
+          toolchain: ${{ steps.rust.outputs.toolchain }}
       - name: Run tests
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: --verbose --release --all-features
+        run: cargo test --verbose --release --all-features
+        shell: bash
 
   build:
     name: Build target ${{ matrix.target }}
@@ -34,49 +34,50 @@ jobs:
           - wasm32-wasi
 
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@v3
+      - id: rust
+        run: echo "toolchain=$(cat rust-toolchain)" >> $GITHUB_OUTPUT
+        shell: bash
+      - uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: 1.56.0
-          override: true
+          toolchain: ${{ steps.rust.outputs.toolchain }}
       - name: Add target
         run: rustup target add ${{ matrix.target }}
       - name: cargo build
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --all-features
+        run: cargo build --all-features
+        shell: bash
 
   bitrot:
     name: Bitrot check
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@v3
+      - id: rust
+        run: echo "toolchain=$(cat rust-toolchain)" >> $GITHUB_OUTPUT
+        shell: bash
+      - uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: 1.56.0
-          override: true
+          toolchain: ${{ steps.rust.outputs.toolchain }}
       # Build benchmarks to prevent bitrot
       - name: Build benchmarks
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --benches --all-features
+        run: cargo build --benches --all-features
+        shell: bash
 
   book:
     name: Book tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@v3
+      - id: rust
+        run: echo "toolchain=$(cat rust-toolchain)" >> $GITHUB_OUTPUT
+        shell: bash
+      - uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: 1.56.0
-          override: true
+          toolchain: ${{ steps.rust.outputs.toolchain }}
       - name: cargo build
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
+        run: cargo build
+        shell: bash
       - name: Setup mdBook
         uses: peaceiris/actions-mdbook@v1
         with:
@@ -90,18 +91,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@v3
+      - id: rust
+        run: echo "toolchain=$(cat rust-toolchain)" >> $GITHUB_OUTPUT
+        shell: bash
+      - uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: 1.56.0
+          toolchain: ${{ steps.rust.outputs.toolchain }}
           components: clippy
-          override: true
       - name: Run clippy
-        uses: actions-rs/clippy-check@v1
-        with:
-          name: Clippy (1.56.0)
-          token: ${{ secrets.GITHUB_TOKEN }}
-          args: --all-features --all-targets -- -D warnings
+        run: cargo clippy --all-features --all-targets -- -D warnings
+        shell: bash
 
   clippy-beta:
     name: Clippy (beta)
@@ -110,43 +110,35 @@ jobs:
     continue-on-error: true
 
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@v3
+      - id: rust
+        run: echo "toolchain=$(cat rust-toolchain)" >> $GITHUB_OUTPUT
+        shell: bash
+      - uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: beta
+          toolchain: ${{ steps.rust.outputs.toolchain }}
           components: clippy
-          override: true
       - name: Run Clippy (beta)
-        uses: actions-rs/clippy-check@v1
+        run: cargo clippy --all-features --all-targets -- -W clippy::all
         continue-on-error: true
-        with:
-          name: Clippy (beta)
-          token: ${{ secrets.GITHUB_TOKEN }}
-          args: --all-features --all-targets -- -W clippy::all
+        shell: bash
 
   codecov:
     name: Code coverage
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       # Use stable for this to ensure that cargo-tarpaulin can be built.
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          override: true
+      - uses: dtolnay/rust-toolchain@stable
       - name: Install cargo-tarpaulin
-        uses: actions-rs/cargo@v1
-        with:
-          command: install
-          args: cargo-tarpaulin
+        run: cargo install cargo-tarpaulin
+        shell: bash
       - name: Generate coverage report
-        uses: actions-rs/cargo@v1
-        with:
-          command: tarpaulin
-          args: --all-features --timeout 600 --out Xml
+        run: cargo tarpaulin --all-features --timeout 600 --out Xml
+        shell: bash
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v3
         with:
           token: ${{secrets.CODECOV_TOKEN}}
 
@@ -155,39 +147,37 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@v3
+      - id: rust
+        run: echo "toolchain=$(cat rust-toolchain)" >> $GITHUB_OUTPUT
+        shell: bash
+      - uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: 1.56.0
-          override: true
+          toolchain: ${{ steps.rust.outputs.toolchain }}
       - name: cargo fetch
-        uses: actions-rs/cargo@v1
-        with:
-          command: fetch
+        run: cargo fetch
+        shell: bash
 
       # Ensure intra-documentation links all resolve correctly
       # Requires #![deny(intra_doc_link_resolution_failure)] in crates.
       - name: Check intra-doc links
-        uses: actions-rs/cargo@v1
-        with:
-          command: doc
-          args: --document-private-items
+        run: cargo doc --document-private-items
 
   fmt:
     name: Rustfmt
     timeout-minutes: 30
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@v3
+      - id: rust
+        run: echo "toolchain=$(cat rust-toolchain)" >> $GITHUB_OUTPUT
+        shell: bash
+      - uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: 1.56.0
-          override: true
+          toolchain: ${{ steps.rust.outputs.toolchain }}
       - run: rustup component add rustfmt
-      - uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: -- --check
+      - run: cargo fmt -- --check
+        shell: bash
 
   no-std:
     name: Check no-std target ${{ matrix.target }}
@@ -200,14 +190,9 @@ jobs:
           - wasm32-wasi
 
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          override: true
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
       - run: rustup target add ${{ matrix.target }}
       - name: Build
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --verbose --target ${{ matrix.target }} --no-default-features
+        run: cargo build --verbose --target ${{ matrix.target }} --no-default-features
+        shell: bash
